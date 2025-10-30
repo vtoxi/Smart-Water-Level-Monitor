@@ -788,15 +788,96 @@ For issues, questions, or suggestions:
 
 ## 🎯 Roadmap
 
-Future enhancements:
-- [ ] Blynk integration
-- [ ] Pressure sensor support
-- [ ] Data logging to SD card
-- [ ] Email/SMS alerts
+### Priority 1: Offline Configuration Console 🎮
+
+**Physical Button Interface for Field Setup**
+
+Perfect for installations without WiFi access or when web configuration isn't practical.
+
+**Hardware:**
+- 4-6 tactile push buttons
+- Optional rotary encoder
+- Uses existing OLED display
+
+**Features:**
+- Complete device setup without WiFi
+- Guided calibration wizard
+- Menu-driven navigation
+- Real-time sensor preview
+- All settings accessible
+- Save changes immediately to NVS
+
+**Button Layout:**
+```
+[UP]     - Navigate up / Increment value
+[DOWN]   - Navigate down / Decrement value  
+[SELECT] - Confirm / Enter submenu
+[BACK]   - Cancel / Return to previous
+[MENU]   - Quick access (long-press)
+```
+
+**Menu Structure:**
+```
+Main Menu
+├── Tank Configuration (mode, calibration, names)
+├── WiFi Setup (SSID selection, password entry)
+├── MQTT Settings (enable, broker, topics)
+├── Pump Control (mode, thresholds, safety)
+├── Display Settings (brightness, timeout)
+├── System (status, factory reset, restart)
+└── Calibration Wizard (step-by-step guided setup)
+```
+
+**Implementation:**
+- Non-blocking FreeRTOS task
+- Interrupt-based button handling
+- Debouncing and long-press detection
+- Menu timeout with auto-return to status
+- T9-style text entry or character wheel
+- Visual feedback on OLED
+- Confirmation dialogs for destructive actions
+
+**Use Cases:**
+- Initial setup in remote locations
+- Field recalibration without laptop
+- Backup configuration if WiFi fails
+- Quick threshold adjustments
+- Emergency system control
+
+**GPIO Pin Assignments:**
+```
+Default Pins:
+- UP Button:     GPIO 13
+- DOWN Button:   GPIO 14
+- SELECT Button: GPIO 15
+- BACK Button:   GPIO 16
+- MENU Button:   GPIO 17
+
+Optional Rotary Encoder:
+- CLK Pin:  GPIO 18
+- DT Pin:   GPIO 19
+- SW Pin:   GPIO 15 (shared with SELECT)
+```
+
+---
+
+### Other Future Features
+
+- [ ] Blynk cloud integration
+- [ ] Home Assistant MQTT discovery
+- [ ] Pressure sensor support (submerged applications)
+- [ ] Data logging to SD card with timestamps
+- [ ] Email/SMS alerts via IFTTT webhooks
 - [ ] Multi-language web interface
-- [ ] Mobile app
-- [ ] Battery monitoring
-- [ ] Solar panel integration
+- [ ] Mobile companion app (iOS/Android)
+- [ ] Battery voltage monitoring
+- [ ] Solar panel integration with MPPT
+- [ ] Historical data graphs (24hr/7day/30day)
+- [ ] Advanced analytics and water usage predictions
+- [ ] Voice assistant integration (Alexa/Google Home)
+- [ ] Modbus RTU support for industrial PLCs
+- [ ] LoRaWAN connectivity option
+- [ ] Multiple device coordination
 
 ---
 

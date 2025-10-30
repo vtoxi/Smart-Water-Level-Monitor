@@ -69,16 +69,33 @@ All notable changes to the Water Level Monitor project will be documented in thi
 ## Future Roadmap
 
 ### Planned Features
+
+#### High Priority
+- [ ] **Offline Configuration Console with Hard Buttons**
+  - 4-6 physical buttons for WiFi-free setup
+  - OLED-based menu system for complete configuration
+  - Guided calibration wizard
+  - Perfect for remote/field installations
+  - Button layout: UP/DOWN/SELECT/BACK/MENU
+  - Optional rotary encoder support
+  - Step-by-step tank calibration
+  - Non-blocking menu task
+  - All settings accessible offline
+
+#### Medium Priority
 - [ ] Blynk integration
-- [ ] Data logging to SD card
-- [ ] Email/SMS alerts via IFTTT
-- [ ] Scheduled pump operation
+- [ ] Data logging to SD card with timestamp
+- [ ] Email/SMS alerts via IFTTT webhooks
+- [ ] Scheduled pump operation (time-based rules)
+- [ ] Historical data graphs (24hr/7day/30day)
+- [ ] Advanced analytics and water usage predictions
+
+#### Low Priority
 - [ ] Multiple language support in web interface
-- [ ] Mobile companion app
-- [ ] Pressure sensor alternative
+- [ ] Mobile companion app (iOS/Android)
+- [ ] Pressure sensor alternative for submerged applications
 - [ ] Battery and solar panel monitoring
-- [ ] Historical data graphs
-- [ ] Advanced analytics and predictions
+- [ ] Voice assistant integration (Alexa/Google Home)
 
 ### Under Consideration
 - [ ] Modbus RTU support for industrial PLCs

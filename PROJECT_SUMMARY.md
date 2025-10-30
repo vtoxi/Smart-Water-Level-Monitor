@@ -280,6 +280,51 @@ All configurable without code changes via web interface:
 
 ---
 
+## 🎯 Roadmap
+
+### Next Major Feature: Offline Configuration Console 🎮
+
+**Physical Button Interface for WiFi-Free Setup**
+- 4-6 tactile buttons + OLED menu system
+- Complete configuration without network access
+- Perfect for remote field deployments
+- Guided calibration wizard with real-time preview
+- Menu structure: Tank Config, WiFi Setup, MQTT, Pump Control, System
+- Optional rotary encoder for easier value adjustment
+- Non-blocking FreeRTOS task integration
+- Button debouncing and long-press detection
+
+**Implementation Components:**
+- `button_manager.cpp` - Interrupt-based button handling
+- `menu_system.cpp` - Hierarchical menu navigation
+- `config_wizard.cpp` - Guided setup flows
+- `value_editor.cpp` - UI for numeric/text editing
+
+**Default GPIO Assignments:**
+```
+UP Button:     GPIO 13
+DOWN Button:   GPIO 14
+SELECT Button: GPIO 15
+BACK Button:   GPIO 16
+MENU Button:   GPIO 17 (long-press for quick access)
+```
+
+### Future Enhancements
+- [ ] Blynk cloud integration
+- [ ] Pressure sensor alternative for submerged tanks
+- [ ] Data logging to SD card with timestamps
+- [ ] Email/SMS alerts via IFTTT webhooks
+- [ ] Multi-language web interface
+- [ ] Mobile companion app (iOS/Android)
+- [ ] Battery voltage monitoring
+- [ ] Solar panel integration with MPPT
+- [ ] Historical graphs (24hr/7day/30day views)
+- [ ] Advanced analytics and predictions
+- [ ] Voice assistant integration
+- [ ] Multiple device coordination
+
+---
+
 ## 🎓 Technical Highlights
 
 ### Architecture Patterns Used

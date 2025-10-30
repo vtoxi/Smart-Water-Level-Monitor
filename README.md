@@ -218,6 +218,22 @@ Default OTA password: `admin123` (change in config.h!)
 
 ---
 
+## Roadmap
+
+Future enhancements:
+- [ ] **Offline Configuration Console** - Physical button interface (4-6 buttons + OLED menu) for WiFi-free setup in field deployments
+- [ ] Blynk integration
+- [ ] Pressure sensor support
+- [ ] Data logging to SD card
+- [ ] Email/SMS alerts via IFTTT
+- [ ] Multi-language web interface
+- [ ] Mobile app (iOS/Android)
+- [ ] Battery monitoring
+- [ ] Solar panel integration
+- [ ] Historical data graphs
+
+---
+
 ## License
 
 MIT License - See LICENSE file for details
