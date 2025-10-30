@@ -22,7 +22,7 @@ public:
     bool connect();
     bool reconnect();
     void disconnect();
-    bool isConnected() const { return client.connected(); }
+    bool isConnected();
     
     // Must be called regularly in loop
     void loop();

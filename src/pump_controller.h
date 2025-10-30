@@ -39,7 +39,7 @@ public:
     void setThresholds(float onThreshold, float offThreshold);
     
     // Safety checks
-    bool isSafe(float sourceLevel) const;
+    bool isSafe(float sourceLevel);
     String getLastError() const { return lastError; }
     
 private:
@@ -47,7 +47,7 @@ private:
     PumpState state;
     uint32_t pumpStartTime;
     uint32_t pumpStopTime;
-    String lastError;
+    mutable String lastError;
     
     // Internal helpers
     bool canStart() const;

@@ -90,7 +90,7 @@ bool WiFiManager::reconnect() {
     
     // Exponential backoff for reconnect interval
     if (reconnectAttempts > 3) {
-        reconnectInterval = min(reconnectInterval * 2, 300000UL); // Max 5 minutes
+        reconnectInterval = min((uint32_t)(reconnectInterval * 2), (uint32_t)300000UL); // Max 5 minutes
     }
     
     return connect();

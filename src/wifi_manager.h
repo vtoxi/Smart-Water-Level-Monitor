@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <DNSServer.h>
+#include "config.h"
 #include "config_manager.h"
 
 // WiFi connection state

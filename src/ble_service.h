@@ -11,9 +11,9 @@
 // Forward declaration
 class PumpController;
 
-class BLEService {
+class WaterLevelBLE {
 public:
-    BLEService(ConfigManager& configManager);
+    WaterLevelBLE(ConfigManager& configManager);
     
     // Initialize BLE service
     bool begin();
@@ -49,20 +49,20 @@ private:
     // Server callbacks
     class ServerCallbacks : public BLEServerCallbacks {
     public:
-        ServerCallbacks(BLEService* service) : bleService(service) {}
+        ServerCallbacks(WaterLevelBLE* service) : bleService(service) {}
         void onConnect(BLEServer* pServer);
         void onDisconnect(BLEServer* pServer);
     private:
-        BLEService* bleService;
+        WaterLevelBLE* bleService;
     };
     
     // Pump control characteristic callbacks
     class PumpCallbacks : public BLECharacteristicCallbacks {
     public:
-        PumpCallbacks(BLEService* service) : bleService(service) {}
+        PumpCallbacks(WaterLevelBLE* service) : bleService(service) {}
         void onWrite(BLECharacteristic* pCharacteristic);
     private:
-        BLEService* bleService;
+        WaterLevelBLE* bleService;
     };
     
     friend class ServerCallbacks;

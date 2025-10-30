@@ -58,7 +58,7 @@ bool MQTTClient::connect() {
         }
         
         // Publish buffered message if available
-        if (hasBufferedMessage) {
+        if (hasLastMessage) {
             publishBuffered();
         }
         
@@ -76,7 +76,7 @@ bool MQTTClient::reconnect() {
     
     // Exponential backoff
     if (reconnectAttempts > 3) {
-        reconnectInterval = min(reconnectInterval * 2, 60000UL); // Max 1 minute
+        reconnectInterval = min((uint32_t)(reconnectInterval * 2), (uint32_t)60000UL); // Max 1 minute
     }
     
     return connect();
@@ -242,6 +242,10 @@ String MQTTClient::createDevicePayload(const SensorReading& tank1, const SensorR
     serializeJson(doc, output);
     
     return output;
+}
+
+bool MQTTClient::isConnected() {
+    return client.connected();
 }
 
 bool MQTTClient::validateConnection() {

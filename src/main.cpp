@@ -18,7 +18,7 @@ ConfigManager configManager;
 WiFiManager wifiManager(configManager);
 WebServer webServer(configManager);
 MQTTClient mqttClient(configManager);
-BLEService bleService(configManager);
+WaterLevelBLE bleService(configManager);
 PumpController pumpController(configManager);
 DisplayOLED display;
 

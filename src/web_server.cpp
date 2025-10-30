@@ -104,7 +104,7 @@ void WebServer::setupRoutes() {
 }
 
 void WebServer::handleRoot(AsyncWebServerRequest* request) {
-    String html = R"(
+    String html = R"rawliteral(
 <!DOCTYPE html>
 <html>
 <head>
@@ -319,7 +319,7 @@ void WebServer::handleRoot(AsyncWebServerRequest* request) {
     </script>
 </body>
 </html>
-    )";
+    )rawliteral";
     
     request->send(200, "text/html", html);
 }

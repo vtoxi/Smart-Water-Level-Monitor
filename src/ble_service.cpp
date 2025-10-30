@@ -2,7 +2,7 @@
 #include "pump_controller.h"
 #include "config.h"
 
-BLEService::BLEService(ConfigManager& configManager)
+WaterLevelBLE::WaterLevelBLE(ConfigManager& configManager)
     : configManager(configManager),
       pumpController(nullptr),
       pServer(nullptr),
@@ -16,7 +16,7 @@ BLEService::BLEService(ConfigManager& configManager)
       oldDeviceConnected(false) {
 }
 
-bool BLEService::begin() {
+bool WaterLevelBLE::begin() {
     const SystemConfig& config = configManager.getConfig();
     
     DEBUG_PRINTLN("BLE: Initializing...");
@@ -78,7 +78,7 @@ bool BLEService::begin() {
     return true;
 }
 
-void BLEService::stop() {
+void WaterLevelBLE::stop() {
     if (running) {
         BLEDevice::deinit(false);
         running = false;
@@ -86,7 +86,7 @@ void BLEService::stop() {
     }
 }
 
-void BLEService::updateTank1Level(float levelPercent) {
+void WaterLevelBLE::updateTank1Level(float levelPercent) {
     if (!running || !pTank1Char) return;
     
     char buffer[16];
@@ -101,7 +101,7 @@ void BLEService::updateTank1Level(float levelPercent) {
     }
 }
 
-void BLEService::updateTank2Level(float levelPercent) {
+void WaterLevelBLE::updateTank2Level(float levelPercent) {
     if (!running || !pTank2Char) return;
     
     char buffer[16];
@@ -116,7 +116,7 @@ void BLEService::updateTank2Level(float levelPercent) {
     }
 }
 
-void BLEService::updatePumpStatus(bool isOn) {
+void WaterLevelBLE::updatePumpStatus(bool isOn) {
     if (!running || !pPumpChar) return;
     
     pPumpChar->setValue(isOn ? "1" : "0");
@@ -127,12 +127,12 @@ void BLEService::updatePumpStatus(bool isOn) {
 }
 
 // Server callbacks implementation
-void BLEService::ServerCallbacks::onConnect(BLEServer* pServer) {
+void WaterLevelBLE::ServerCallbacks::onConnect(BLEServer* pServer) {
     bleService->deviceConnected = true;
     DEBUG_PRINTLN("BLE: Client connected");
 }
 
-void BLEService::ServerCallbacks::onDisconnect(BLEServer* pServer) {
+void WaterLevelBLE::ServerCallbacks::onDisconnect(BLEServer* pServer) {
     bleService->deviceConnected = false;
     DEBUG_PRINTLN("BLE: Client disconnected");
     
@@ -143,7 +143,7 @@ void BLEService::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 }
 
 // Pump control callbacks implementation
-void BLEService::PumpCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+void WaterLevelBLE::PumpCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
     std::string value = pCharacteristic->getValue();
     
     if (value.length() > 0 && bleService->pumpController) {

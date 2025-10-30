@@ -152,7 +152,7 @@ bool PumpController::shouldStop() const {
     return false;
 }
 
-bool PumpController::isSafe(float sourceLevel) const {
+bool PumpController::isSafe(float sourceLevel) {
     // Check if source tank has enough water
     if (sourceLevel < PUMP_DRY_RUN_THRESHOLD) {
         lastError = "Source tank too low (dry-run protection)";
