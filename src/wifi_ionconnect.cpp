@@ -9,12 +9,22 @@
 #endif
 
 WiFiIonConnect::WiFiIonConnect(ConfigManager& configManager)
-    : configManager(configManager) {
+    : configManager(configManager), ion(nullptr) {
+    // Allocate IonConnect on heap (better for ESP8266 with limited stack)
+    ion = new IonConnectDevice();
+}
+
+WiFiIonConnect::~WiFiIonConnect() {
+    // Clean up dynamically allocated IonConnect instance
+    if (ion) {
+        delete ion;
+        ion = nullptr;
+    }
 }
 
 void WiFiIonConnect::setupCallbacks() {
     // Register connection callback
-    ion.onConnect([this]() {
+    ion->onConnect([this]() {
         DEBUG_PRINTLN("\n✓ IonConnect: WiFi Connected!");
         DEBUG_PRINTF("  IP Address: %s\n", WiFi.localIP().toString().c_str());
         DEBUG_PRINTF("  Signal: %d dBm\n", WiFi.RSSI());
@@ -31,33 +41,49 @@ void WiFiIonConnect::setupCallbacks() {
     });
     
     // Register disconnection callback
-    ion.onDisconnect([this]() {
+    ion->onDisconnect([this]() {
         DEBUG_PRINTLN("⚠ IonConnect: WiFi Disconnected");
     });
     
     // Register portal start callback
-    ion.onPortalStart([this]() {
+    ion->onPortalStart([this]() {
         DEBUG_PRINTLN("\n→ IonConnect: Captive Portal Started");
         DEBUG_PRINTLN("  Connect to: IonConnect-XXXX WiFi");
         DEBUG_PRINTLN("  Go to: http://192.168.4.1");
     });
     
     // Register config saved callback
-    ion.onConfigSaved([this]() {
+    ion->onConfigSaved([this]() {
         DEBUG_PRINTLN("✓ IonConnect: Configuration saved");
     });
 }
 
 bool WiFiIonConnect::begin() {
+    if (!ion) {
+        DEBUG_PRINTLN("✗ IonConnect: Instance not allocated!");
+        return false;
+    }
+    
     const SystemConfig& config = configManager.getConfig();
     
     DEBUG_PRINTLN("IonConnect: Initializing...");
     
+    #ifdef ESP8266
+        DEBUG_PRINTF("Free heap before init: %d bytes\n", ESP.getFreeHeap());
+        delay(100);  // Give ESP8266 time to stabilize
+    #endif
+    
     // Initialize IonConnect with device name
-    if (!ion.init(config.deviceId)) {
+    DEBUG_PRINTF("Calling ion->init() with deviceId: %s\n", config.deviceId);
+    
+    if (!ion->init(config.deviceId)) {
         DEBUG_PRINTLN("✗ IonConnect: Initialization failed!");
         return false;
     }
+    
+    #ifdef ESP8266
+        DEBUG_PRINTF("Free heap after init: %d bytes\n", ESP.getFreeHeap());
+    #endif
     
     // Setup event callbacks
     setupCallbacks();
@@ -65,11 +91,11 @@ bool WiFiIonConnect::begin() {
     // If we have stored credentials, add them
     if (strlen(config.wifiSSID) > 0) {
         DEBUG_PRINTF("IonConnect: Adding saved network: %s\n", config.wifiSSID);
-        ion.addNetwork(config.wifiSSID, config.wifiPassword);
+        ion->addNetwork(config.wifiSSID, config.wifiPassword);
     }
     
     // Start IonConnect - will either connect or start portal
-    if (!ion.begin()) {
+    if (!ion->begin()) {
         DEBUG_PRINTLN("✗ IonConnect: begin() failed!");
         return false;
     }
@@ -80,11 +106,11 @@ bool WiFiIonConnect::begin() {
 
 void WiFiIonConnect::loop() {
     // IonConnect handles everything internally
-    ion.handle();
+    ion->handle();
 }
 
 bool WiFiIonConnect::isConnected() {
-    return ion.isConnected();
+    return ion->isConnected();
 }
 
 String WiFiIonConnect::getIP() const {
@@ -109,7 +135,7 @@ int8_t WiFiIonConnect::getRSSI() const {
 }
 
 bool WiFiIonConnect::isAPMode() {
-    return ion.isPortalActive();
+    return ion->isPortalActive();
 }
 
 String WiFiIonConnect::getAPIP() const {
@@ -125,10 +151,10 @@ void WiFiIonConnect::setHostname(const char* hostname) {
 }
 
 void WiFiIonConnect::disconnect() {
-    ion.disconnect();
+    ion->disconnect();
 }
 
 void WiFiIonConnect::reconnect() {
-    ion.connect();
+    ion->connect();
 }
 

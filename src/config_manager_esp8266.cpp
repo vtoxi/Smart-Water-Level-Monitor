@@ -59,6 +59,13 @@ bool ConfigManager::loadFromLittleFS() {
     config.displayTimeout = doc["dispTimeout"].as<uint32_t>();
     
     strlcpy(config.deviceId, doc["deviceId"] | "", sizeof(config.deviceId));
+    
+    // Generate device ID if not present
+    if (strlen(config.deviceId) == 0) {
+        DEBUG_PRINTLN("Device ID not found in config, generating...");
+        generateDeviceId();
+    }
+    
     config.isConfigured = true;
     
     DEBUG_PRINTLN("Configuration loaded from LittleFS");

@@ -35,6 +35,21 @@ pio run -t upload -e esp32dev
 pio device monitor -b 115200
 ```
 
+## ESP8266 Memory Optimization ✅
+
+**Issue:** ESP8266 was crashing with Exception (3) during IonConnect initialization due to stack overflow.
+
+**Fix:** Changed `IonConnectDevice ion;` to `IonConnectDevice* ion;` (heap allocation)
+- Allocate IonConnect on heap instead of stack
+- Reduces stack pressure on ESP8266
+- Added destructor for proper cleanup
+- Added null pointer safety checks
+
+**Files Modified:**
+- `src/wifi_ionconnect.h` - Changed member to pointer
+- `src/wifi_ionconnect.cpp` - Added heap allocation, destructor, null checks
+- `src/config_manager_esp8266.cpp` - Added deviceId generation check after loading config
+
 ## Known Warnings (Non-Critical)
 
 - `DEBUG_WIFI_CONN` redefinition warning - Fixed by renaming macro

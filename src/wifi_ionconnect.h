@@ -1,5 +1,10 @@
 #ifndef WIFI_IONCONNECT_H
 #define WIFI_IONCONNECT_H
+#define ION_MINIMAL_MODE 1
+#define ION_ENABLE_BLE 0
+#define ION_ENABLE_OTA 0
+#define ION_ENABLE_MDNS 0
+#define ION_ENABLE_DIAGNOSTICS 0
 
 #include <Arduino.h>
 #include "config.h"
@@ -13,6 +18,7 @@
 class WiFiIonConnect {
 public:
     WiFiIonConnect(ConfigManager& configManager);
+    ~WiFiIonConnect();
     
     // Initialize WiFi with IonConnect
     bool begin();
@@ -35,7 +41,7 @@ public:
     
 private:
     ConfigManager& configManager;
-    IonConnectDevice ion;  // Platform-specific IonConnect instance
+    IonConnectDevice* ion;  // Platform-specific IonConnect instance (pointer for ESP8266 memory)
     
     // Callbacks for IonConnect events
     void setupCallbacks();
