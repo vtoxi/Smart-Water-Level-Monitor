@@ -48,7 +48,11 @@ pio device monitor
 
 ## Hardware Requirements
 
-- **ESP32 DevKit** (WROOM-32 or compatible)
+### Supported Boards
+- **ESP32 DevKit** (WROOM-32 or compatible) - Dual core with BLE
+- **ESP32-S2** (Saola-1 or compatible) - Single core, WiFi only (no BLE)
+
+### Components
 - **JSN-SR04T** waterproof ultrasonic sensor (1-2×)
 - **SSD1306 OLED** 0.96" I2C display
 - **Relay module** for pump control
@@ -59,12 +63,22 @@ pio device monitor
 
 ## Default GPIO Pins
 
+### ESP32 Classic
 ```
 Tank 1 Sensor:   TRIG=GPIO25, ECHO=GPIO26
 Tank 2 Sensor:   TRIG=GPIO32, ECHO=GPIO33
 OLED Display:    SDA=GPIO21, SCL=GPIO22
 Pump Relay:      GPIO27
 Status LED:      GPIO2
+```
+
+### ESP32-S2
+```
+Tank 1 Sensor:   TRIG=GPIO10, ECHO=GPIO11
+Tank 2 Sensor:   TRIG=GPIO12, ECHO=GPIO13
+OLED Display:    SDA=GPIO8,  SCL=GPIO9
+Pump Relay:      GPIO7
+Status LED:      GPIO15
 ```
 
 *All pins configurable via web interface!*
@@ -108,6 +122,31 @@ water-level/
 ```
 
 ---
+
+## Board Selection
+
+Choose your board in `platformio.ini`:
+```ini
+# For ESP32 Classic (with BLE support):
+default_envs = esp32dev
+
+# For ESP32-S2 (WiFi only, no BLE):
+default_envs = esp32s2dev
+```
+
+### Feature Matrix
+```
+Feature              | ESP32 Classic | ESP32-S2
+---------------------|---------------|----------
+WiFi                 |      ✅       |    ✅
+MQTT                 |      ✅       |    ✅
+BLE                  |      ✅       |    ❌
+Web Server           |      ✅       |    ✅
+OLED Display         |      ✅       |    ✅
+Pump Control         |      ✅       |    ✅
+Dual Core Tasks      |      ✅       |    ❌
+Native USB           |      ❌       |    ✅
+```
 
 ## Configuration
 

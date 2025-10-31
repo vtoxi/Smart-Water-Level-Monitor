@@ -3,20 +3,28 @@
 #include "config.h"
 
 WaterLevelBLE::WaterLevelBLE(ConfigManager& configManager)
-    : configManager(configManager),
-      pumpController(nullptr),
-      pServer(nullptr),
-      pService(nullptr),
-      pTank1Char(nullptr),
-      pTank2Char(nullptr),
-      pPumpChar(nullptr),
-      pConfigChar(nullptr),
-      running(false),
-      deviceConnected(false),
-      oldDeviceConnected(false) {
+    : configManager(configManager)
+#if HAS_BLE
+      , pumpController(nullptr)
+      , pServer(nullptr)
+      , pService(nullptr)
+      , pTank1Char(nullptr)
+      , pTank2Char(nullptr)
+      , pPumpChar(nullptr)
+      , pConfigChar(nullptr)
+      , running(false)
+      , deviceConnected(false)
+      , oldDeviceConnected(false)
+#endif
+{
 }
 
 bool WaterLevelBLE::begin() {
+    #if !HAS_BLE
+        DEBUG_PRINTLN("BLE: Not available on this board (ESP32-S2)");
+        return false;
+    #else
+    
     const SystemConfig& config = configManager.getConfig();
     
     DEBUG_PRINTLN("BLE: Initializing...");
@@ -76,17 +84,25 @@ bool WaterLevelBLE::begin() {
     DEBUG_PRINTF("BLE: Service started (Device: %s)\n", config.deviceId);
     
     return true;
+    #endif
 }
 
 void WaterLevelBLE::stop() {
-    if (running) {
-        BLEDevice::deinit(false);
-        running = false;
-        DEBUG_PRINTLN("BLE: Service stopped");
-    }
+    #if HAS_BLE
+        if (running) {
+            BLEDevice::deinit(false);
+            running = false;
+            DEBUG_PRINTLN("BLE: Service stopped");
+        }
+    #endif
 }
 
 void WaterLevelBLE::updateTank1Level(float levelPercent) {
+    #if !HAS_BLE
+        return;
+    #endif
+    
+    #if HAS_BLE
     if (!running || !pTank1Char) return;
     
     char buffer[16];
@@ -99,9 +115,15 @@ void WaterLevelBLE::updateTank1Level(float levelPercent) {
         DEBUG_PRINTF("BLE: Tank1 level updated: %.1f%%\n", levelPercent);
         #endif
     }
+    #endif
 }
 
 void WaterLevelBLE::updateTank2Level(float levelPercent) {
+    #if !HAS_BLE
+        return;
+    #endif
+    
+    #if HAS_BLE
     if (!running || !pTank2Char) return;
     
     char buffer[16];
@@ -114,9 +136,15 @@ void WaterLevelBLE::updateTank2Level(float levelPercent) {
         DEBUG_PRINTF("BLE: Tank2 level updated: %.1f%%\n", levelPercent);
         #endif
     }
+    #endif
 }
 
 void WaterLevelBLE::updatePumpStatus(bool isOn) {
+    #if !HAS_BLE
+        return;
+    #endif
+    
+    #if HAS_BLE
     if (!running || !pPumpChar) return;
     
     pPumpChar->setValue(isOn ? "1" : "0");
@@ -124,8 +152,10 @@ void WaterLevelBLE::updatePumpStatus(bool isOn) {
     #if DEBUG_BLE
     DEBUG_PRINTF("BLE: Pump status updated: %s\n", isOn ? "ON" : "OFF");
     #endif
+    #endif
 }
 
+#if HAS_BLE
 // Server callbacks implementation
 void WaterLevelBLE::ServerCallbacks::onConnect(BLEServer* pServer) {
     bleService->deviceConnected = true;
@@ -158,4 +188,5 @@ void WaterLevelBLE::PumpCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
         }
     }
 }
+#endif // HAS_BLE
 

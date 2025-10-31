@@ -2,6 +2,29 @@
 
 All notable changes to the Water Level Monitor project will be documented in this file.
 
+## [1.1.0] - 2025-10-31
+
+### Added
+- **ESP32-S2 Support**: Full compatibility with ESP32-S2 boards (WiFi-only variant)
+  - Conditional compilation for BLE (available on ESP32 Classic, not on S2)
+  - Single-core task scheduling for S2 (vs dual-core for Classic)
+  - Board-specific GPIO pin mappings optimized for each variant
+  - Native USB support for S2 debugging
+- Multi-board PlatformIO configuration with separate environments (`esp32dev` and `esp32s2dev`)
+- Feature comparison matrix in documentation
+
+### Changed
+- Firmware version bumped to 1.1.0
+- Refactored BLE code with `#if HAS_BLE` preprocessor guards
+- Updated FreeRTOS task creation with board-specific core pinning
+- GPIO pins optimized for each board (avoiding strapping pins on S2)
+
+### Technical Details
+- **ESP32-S2 GPIO Assignments**: I2C (GPIO8/9), Sensors (GPIO10/11/12/13), Relay (GPIO7), LED (GPIO15)
+- **ESP32 Classic GPIO Assignments**: Unchanged from v1.0.0
+- **Flash Usage**: ESP32-S2 ~28% (883KB), ESP32 Classic ~55% (1.7MB) - BLE adds ~850KB overhead
+- **RAM Usage**: ESP32-S2 ~18%, ESP32 Classic ~20%
+
 ## [1.0.0] - 2025-10-30
 
 ### Initial Release

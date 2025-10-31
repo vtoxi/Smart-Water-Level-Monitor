@@ -144,36 +144,69 @@ void setup() {
     
     // Create FreeRTOS tasks
     DEBUG_PRINTLN("Creating tasks...");
+    DEBUG_PRINTF("Board: %s\n", BOARD_NAME);
+    DEBUG_PRINTF("BLE Support: %s\n", HAS_BLE ? "Yes" : "No");
     
-    xTaskCreatePinnedToCore(
-        sensorTask,
-        "SensorTask",
-        SENSOR_TASK_STACK,
-        NULL,
-        SENSOR_TASK_PRIORITY,
-        &sensorTaskHandle,
-        0  // Core 0
-    );
-    
-    xTaskCreatePinnedToCore(
-        displayTask,
-        "DisplayTask",
-        DISPLAY_TASK_STACK,
-        NULL,
-        DISPLAY_TASK_PRIORITY,
-        &displayTaskHandle,
-        0  // Core 0
-    );
-    
-    xTaskCreatePinnedToCore(
-        networkTask,
-        "NetworkTask",
-        NETWORK_TASK_STACK,
-        NULL,
-        NETWORK_TASK_PRIORITY,
-        &networkTaskHandle,
-        1  // Core 1
-    );
+    #ifdef BOARD_ESP32_S2
+        // ESP32-S2: Single core - all tasks on core 0
+        xTaskCreate(
+            sensorTask,
+            "SensorTask",
+            SENSOR_TASK_STACK,
+            NULL,
+            SENSOR_TASK_PRIORITY,
+            &sensorTaskHandle
+        );
+        
+        xTaskCreate(
+            displayTask,
+            "DisplayTask",
+            DISPLAY_TASK_STACK,
+            NULL,
+            DISPLAY_TASK_PRIORITY,
+            &displayTaskHandle
+        );
+        
+        xTaskCreate(
+            networkTask,
+            "NetworkTask",
+            NETWORK_TASK_STACK,
+            NULL,
+            NETWORK_TASK_PRIORITY,
+            &networkTaskHandle
+        );
+    #else
+        // ESP32 Classic: Dual core - distribute tasks
+        xTaskCreatePinnedToCore(
+            sensorTask,
+            "SensorTask",
+            SENSOR_TASK_STACK,
+            NULL,
+            SENSOR_TASK_PRIORITY,
+            &sensorTaskHandle,
+            0  // Core 0
+        );
+        
+        xTaskCreatePinnedToCore(
+            displayTask,
+            "DisplayTask",
+            DISPLAY_TASK_STACK,
+            NULL,
+            DISPLAY_TASK_PRIORITY,
+            &displayTaskHandle,
+            0  // Core 0
+        );
+        
+        xTaskCreatePinnedToCore(
+            networkTask,
+            "NetworkTask",
+            NETWORK_TASK_STACK,
+            NULL,
+            NETWORK_TASK_PRIORITY,
+            &networkTaskHandle,
+            1  // Core 1
+        );
+    #endif
     
     systemInitialized = true;
     digitalWrite(STATUS_LED_PIN, LOW);

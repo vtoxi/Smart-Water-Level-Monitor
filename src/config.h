@@ -2,36 +2,80 @@
 #define CONFIG_H
 
 // ============================================================================
+// BOARD DETECTION
+// ============================================================================
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(ESP32_S2)
+    #define BOARD_ESP32_S2
+    #define BOARD_NAME "ESP32-S2"
+    #define HAS_BLE false
+#elif defined(CONFIG_IDF_TARGET_ESP32) || defined(ESP32_CLASSIC)
+    #define BOARD_ESP32_CLASSIC
+    #define BOARD_NAME "ESP32"
+    #define HAS_BLE true
+#else
+    // Default to ESP32 Classic
+    #define BOARD_ESP32_CLASSIC
+    #define BOARD_NAME "ESP32"
+    #define HAS_BLE true
+#endif
+
+// ============================================================================
 // FIRMWARE VERSION
 // ============================================================================
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.1.0"
 #define DEVICE_NAME "WaterMonitor"
 
 // ============================================================================
-// DEFAULT GPIO PIN ASSIGNMENTS (ESP32)
+// DEFAULT GPIO PIN ASSIGNMENTS
 // ============================================================================
 
-// Tank 1 Ultrasonic Sensor (JSN-SR04T)
-#define DEFAULT_TRIG_PIN_1      25
-#define DEFAULT_ECHO_PIN_1      26
-
-// Tank 2 Ultrasonic Sensor (JSN-SR04T) - Optional for dual-tank mode
-#define DEFAULT_TRIG_PIN_2      32
-#define DEFAULT_ECHO_PIN_2      33
-
-// OLED Display (I2C)
-#define OLED_SDA_PIN            21
-#define OLED_SCL_PIN            22
-#define OLED_RESET_PIN          -1    // Reset pin (or -1 if sharing Arduino reset pin)
-#define OLED_WIDTH              128
-#define OLED_HEIGHT             64
-#define OLED_ADDRESS            0x3C
-
-// Pump Control Relay
-#define DEFAULT_PUMP_RELAY_PIN  27
-
-// Status LED (optional)
-#define STATUS_LED_PIN          2     // Built-in LED on most ESP32 boards
+#ifdef BOARD_ESP32_S2
+    // ESP32-S2 specific pins (avoiding strapping pins)
+    // Tank 1 Ultrasonic Sensor (JSN-SR04T)
+    #define DEFAULT_TRIG_PIN_1      10
+    #define DEFAULT_ECHO_PIN_1      11
+    
+    // Tank 2 Ultrasonic Sensor (JSN-SR04T) - Optional for dual-tank mode
+    #define DEFAULT_TRIG_PIN_2      12
+    #define DEFAULT_ECHO_PIN_2      13
+    
+    // OLED Display (I2C)
+    #define OLED_SDA_PIN            8
+    #define OLED_SCL_PIN            9
+    #define OLED_RESET_PIN          -1
+    #define OLED_WIDTH              128
+    #define OLED_HEIGHT             64
+    #define OLED_ADDRESS            0x3C
+    
+    // Pump Control Relay
+    #define DEFAULT_PUMP_RELAY_PIN  7
+    
+    // Status LED
+    #define STATUS_LED_PIN          15    // Built-in LED on ESP32-S2
+#else
+    // ESP32 Classic pins
+    // Tank 1 Ultrasonic Sensor (JSN-SR04T)
+    #define DEFAULT_TRIG_PIN_1      25
+    #define DEFAULT_ECHO_PIN_1      26
+    
+    // Tank 2 Ultrasonic Sensor (JSN-SR04T) - Optional for dual-tank mode
+    #define DEFAULT_TRIG_PIN_2      32
+    #define DEFAULT_ECHO_PIN_2      33
+    
+    // OLED Display (I2C)
+    #define OLED_SDA_PIN            21
+    #define OLED_SCL_PIN            22
+    #define OLED_RESET_PIN          -1    // Reset pin (or -1 if sharing Arduino reset pin)
+    #define OLED_WIDTH              128
+    #define OLED_HEIGHT             64
+    #define OLED_ADDRESS            0x3C
+    
+    // Pump Control Relay
+    #define DEFAULT_PUMP_RELAY_PIN  27
+    
+    // Status LED (optional)
+    #define STATUS_LED_PIN          2     // Built-in LED on most ESP32 boards
+#endif
 
 // ============================================================================
 // SENSOR CONFIGURATION
