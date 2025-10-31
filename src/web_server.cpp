@@ -104,7 +104,49 @@ void WebServer::setupRoutes() {
 }
 
 void WebServer::handleRoot(AsyncWebServerRequest* request) {
-    String html = R"rawliteral(
+    #ifdef ESP8266
+        // ESP8266: Use chunked response to save RAM
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->print(F("<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Water Monitor</title>"));
+        response->print(F("<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:10px;background:#f0f0f0}.container{max-width:600px;margin:0 auto;background:#fff;padding:15px;border-radius:5px}"));
+        response->print(F("h1{color:#333;font-size:20px;margin-bottom:10px}.card{background:#f9f9f9;padding:10px;margin:5px 0;border-radius:3px;border-left:3px solid #4CAF50}"));
+        response->print(F(".level{font-size:32px;font-weight:bold;color:#4CAF50}.btn{padding:8px 15px;margin:3px;background:#2196F3;color:#fff;border:none;border-radius:3px;cursor:pointer}"));
+        response->print(F(".btn:active{background:#1976D2}.btn-danger{background:#f44336}.form-group{margin:10px 0}label{display:block;margin-bottom:3px;font-weight:bold}"));
+        response->print(F("input,select{width:100%;padding:6px;border:1px solid #ddd;border-radius:3px}.tabs{display:flex;border-bottom:1px solid #ddd;margin-bottom:10px}"));
+        response->print(F(".tab{padding:8px 15px;cursor:pointer;border:none;background:none}.tab.active{border-bottom:2px solid #2196F3;color:#2196F3;font-weight:bold}"));
+        response->print(F(".tab-content{display:none}.tab-content.active{display:block}</style></head><body><div class='container'><h1>💧 Water Monitor</h1>"));
+        response->print(F("<div class='tabs'><button class='tab active' onclick=\"showTab('status')\">Status</button>"));
+        response->print(F("<button class='tab' onclick=\"showTab('config')\">Config</button><button class='tab' onclick=\"showTab('system')\">System</button></div>"));
+        response->print(F("<div id='status-tab' class='tab-content active'><div id='tank-display'></div><div class='card'><h3>Connections</h3>"));
+        response->print(F("<p><strong>WiFi:</strong> <span id='wifi-status'>-</span></p><p><strong>MQTT:</strong> <span id='mqtt-status'>-</span></p></div>"));
+        response->print(F("<div class='card'><h3>Pump</h3><p><strong>Status:</strong> <span id='pump-status'>-</span></p>"));
+        response->print(F("<button class='btn' onclick=\"controlPump('on')\">ON</button><button class='btn btn-danger' onclick=\"controlPump('off')\">OFF</button></div></div>"));
+        response->print(F("<div id='config-tab' class='tab-content'><form id='config-form'><h3>WiFi</h3><div class='form-group'><label>SSID:</label><input type='text' id='wifi-ssid'></div>"));
+        response->print(F("<div class='form-group'><label>Password:</label><input type='password' id='wifi-password'></div><h3>MQTT</h3>"));
+        response->print(F("<div class='form-group'><label>Broker:</label><input type='text' id='mqtt-broker'></div>"));
+        response->print(F("<div class='form-group'><label>Port:</label><input type='number' id='mqtt-port' value='1883'></div>"));
+        response->print(F("<button type='submit' class='btn'>Save</button></form></div>"));
+        response->print(F("<div id='system-tab' class='tab-content'><h3>System</h3><button class='btn' onclick='restart()'>Restart</button>"));
+        response->print(F("<button class='btn btn-danger' onclick='factoryReset()'>Reset</button></div></div>"));
+        response->print(F("<script>let statusInterval;function showTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));"));
+        response->print(F("document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');"));
+        response->print(F("document.getElementById(tab+'-tab').classList.add('active');tab==='status'?startStatusUpdates():stopStatusUpdates()}"));
+        response->print(F("function startStatusUpdates(){updateStatus();statusInterval=setInterval(updateStatus,3000)}"));
+        response->print(F("function stopStatusUpdates(){clearInterval(statusInterval)}"));
+        response->print(F("async function updateStatus(){try{const r=await fetch('/api/status');const d=await r.json();"));
+        response->print(F("document.getElementById('tank-display').innerHTML=`<div class='card'><h2>${d.tank1?.name||'Tank'}</h2><div class='level'>${(d.tank1?.level||0).toFixed(0)}%</div></div>`;"));
+        response->print(F("document.getElementById('wifi-status').textContent=d.wifi?'Connected':'Disconnected';"));
+        response->print(F("document.getElementById('mqtt-status').textContent=d.mqtt?'Connected':'Disconnected';"));
+        response->print(F("document.getElementById('pump-status').textContent=d.pump?'ON':'OFF'}catch(e){console.error(e)}}"));
+        response->print(F("async function controlPump(action){try{await fetch('/api/pump',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});"));
+        response->print(F("updateStatus()}catch(e){alert('Error: '+e)}}"));
+        response->print(F("async function restart(){if(confirm('Restart?')){await fetch('/api/restart',{method:'POST'});alert('Restarting...')}}"));
+        response->print(F("async function factoryReset(){if(confirm('Reset all settings?')){await fetch('/api/reset',{method:'POST'});alert('Resetting...')}}"));
+        response->print(F("startStatusUpdates();</script></body></html>"));
+        request->send(response);
+    #else
+        // ESP32: Use full-featured page with String (more RAM available)
+        String html = R"rawliteral(
 <!DOCTYPE html>
 <html>
 <head>
@@ -320,8 +362,9 @@ void WebServer::handleRoot(AsyncWebServerRequest* request) {
 </body>
 </html>
     )rawliteral";
-    
-    request->send(200, "text/html", html);
+        
+        request->send(200, "text/html", html);
+    #endif
 }
 
 void WebServer::handleStatus(AsyncWebServerRequest* request) {
