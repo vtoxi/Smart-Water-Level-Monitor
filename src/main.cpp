@@ -1,6 +1,24 @@
 #include <Arduino.h>
 #include <Wire.h>
+
+// Board-specific WiFi libraries
+#ifdef ESP8266
+    #include <ESP8266WiFi.h>
+    #include <ESP8266mDNS.h>
+#else
+    #include <WiFi.h>
+    #include <ESPmDNS.h>
+#endif
+
 #include <ArduinoOTA.h>
+
+// FreeRTOS support (both ESP32 and ESP8266 have it)
+#ifdef ESP8266
+    extern "C" {
+        #include "user_interface.h"
+    }
+#endif
+
 #include "config.h"
 #include "config_manager.h"
 #include "sensor_ultrasonic.h"
@@ -27,11 +45,31 @@ UltrasonicSensor* sensor1 = nullptr;
 UltrasonicSensor* sensor2 = nullptr;
 
 // ============================================================================
+// ESP8266 FREERTOS COMPATIBILITY
+// ============================================================================
+#ifdef ESP8266
+    // ESP8266 FreeRTOS compatibility layer
+    #include <Schedule.h>
+    #define vTaskDelay(ms) delay(ms)
+    #define portTICK_PERIOD_MS 1
+    #define vTaskSuspend(x) do {} while(0)
+    // ESP8266 doesn't have true FreeRTOS tasks in the same way
+    // We'll use the Schedule library for pseudo-tasks
+#endif
+
+// ============================================================================
 // TASK HANDLES
 // ============================================================================
-TaskHandle_t sensorTaskHandle = NULL;
-TaskHandle_t displayTaskHandle = NULL;
-TaskHandle_t networkTaskHandle = NULL;
+#ifndef ESP8266
+    TaskHandle_t sensorTaskHandle = NULL;
+    TaskHandle_t displayTaskHandle = NULL;
+    TaskHandle_t networkTaskHandle = NULL;
+#else
+    // ESP8266 doesn't expose TaskHandle_t
+    void* sensorTaskHandle = NULL;
+    void* displayTaskHandle = NULL;
+    void* networkTaskHandle = NULL;
+#endif
 
 // ============================================================================
 // GLOBAL STATE
@@ -146,36 +184,11 @@ void setup() {
     DEBUG_PRINTLN("Creating tasks...");
     DEBUG_PRINTF("Board: %s\n", BOARD_NAME);
     DEBUG_PRINTF("BLE Support: %s\n", HAS_BLE ? "Yes" : "No");
+    #ifdef BOARD_ESP8266
+        DEBUG_PRINTLN("ESP8266: Reduced stack sizes for limited RAM");
+    #endif
     
-    #ifdef BOARD_ESP32_S2
-        // ESP32-S2: Single core - all tasks on core 0
-        xTaskCreate(
-            sensorTask,
-            "SensorTask",
-            SENSOR_TASK_STACK,
-            NULL,
-            SENSOR_TASK_PRIORITY,
-            &sensorTaskHandle
-        );
-        
-        xTaskCreate(
-            displayTask,
-            "DisplayTask",
-            DISPLAY_TASK_STACK,
-            NULL,
-            DISPLAY_TASK_PRIORITY,
-            &displayTaskHandle
-        );
-        
-        xTaskCreate(
-            networkTask,
-            "NetworkTask",
-            NETWORK_TASK_STACK,
-            NULL,
-            NETWORK_TASK_PRIORITY,
-            &networkTaskHandle
-        );
-    #else
+    #ifdef BOARD_ESP32_CLASSIC
         // ESP32 Classic: Dual core - distribute tasks
         xTaskCreatePinnedToCore(
             sensorTask,
@@ -205,6 +218,40 @@ void setup() {
             NETWORK_TASK_PRIORITY,
             &networkTaskHandle,
             1  // Core 1
+        );
+    #elif defined(ESP8266)
+        // ESP8266: Use Schedule library for cooperative multitasking
+        schedule_function([]() { sensorTask(NULL); });
+        schedule_function([]() { displayTask(NULL); });
+        schedule_function([]() { networkTask(NULL); });
+        DEBUG_PRINTLN("ESP8266: Using scheduled functions instead of FreeRTOS tasks");
+    #else
+        // ESP32-S2: Single core - all tasks on core 0
+        xTaskCreate(
+            sensorTask,
+            "SensorTask",
+            SENSOR_TASK_STACK,
+            NULL,
+            SENSOR_TASK_PRIORITY,
+            &sensorTaskHandle
+        );
+        
+        xTaskCreate(
+            displayTask,
+            "DisplayTask",
+            DISPLAY_TASK_STACK,
+            NULL,
+            DISPLAY_TASK_PRIORITY,
+            &displayTaskHandle
+        );
+        
+        xTaskCreate(
+            networkTask,
+            "NetworkTask",
+            NETWORK_TASK_STACK,
+            NULL,
+            NETWORK_TASK_PRIORITY,
+            &networkTaskHandle
         );
     #endif
     

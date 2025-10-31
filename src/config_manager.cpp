@@ -1,43 +1,67 @@
 #include "config_manager.h"
 #include "config.h"
-#include <esp_system.h>
+
+#ifndef ESP8266
+    #include <esp_system.h>
+#endif
 
 ConfigManager::ConfigManager() {
     // Constructor
 }
 
 bool ConfigManager::begin() {
-    if (!preferences.begin("waterlevel", false)) {
-        DEBUG_PRINTLN("Failed to initialize NVS");
-        return false;
-    }
-    
-    // Check if this is first run
-    bool isConfigured = preferences.getBool("configured", false);
-    
-    if (!isConfigured) {
-        DEBUG_PRINTLN("First run detected, setting defaults");
-        resetToDefaults();
-        saveConfig();
-    } else {
-        loadConfig();
-    }
+    #ifdef ESP8266
+        // Initialize LittleFS for ESP8266
+        if (!LittleFS.begin()) {
+            DEBUG_PRINTLN("Failed to mount LittleFS");
+            return false;
+        }
+        
+        // Check if config file exists
+        if (!LittleFS.exists("/config.json")) {
+            DEBUG_PRINTLN("First run detected, setting defaults");
+            resetToDefaults();
+            saveConfig();
+        } else {
+            loadConfig();
+        }
+    #else
+        // Use Preferences for ESP32
+        if (!preferences.begin("waterlevel", false)) {
+            DEBUG_PRINTLN("Failed to initialize NVS");
+            return false;
+        }
+        
+        // Check if this is first run
+        bool isConfigured = preferences.getBool("configured", false);
+        
+        if (!isConfigured) {
+            DEBUG_PRINTLN("First run detected, setting defaults");
+            resetToDefaults();
+            saveConfig();
+        } else {
+            loadConfig();
+        }
+    #endif
     
     return true;
 }
 
 bool ConfigManager::loadConfig() {
-    DEBUG_PRINTLN("Loading configuration from NVS...");
-    
-    // Tank configuration
-    config.tankMode = (TankMode)preferences.getUChar("tankMode", SINGLE_TANK);
-    config.unitSystem = (UnitSystem)preferences.getUChar("unitSystem", METRIC_CM);
-    config.tank1EmptyCm = preferences.getFloat("t1Empty", DEFAULT_TANK1_EMPTY_CM);
-    config.tank1FullCm = preferences.getFloat("t1Full", DEFAULT_TANK1_FULL_CM);
-    config.tank2EmptyCm = preferences.getFloat("t2Empty", DEFAULT_TANK2_EMPTY_CM);
-    config.tank2FullCm = preferences.getFloat("t2Full", DEFAULT_TANK2_FULL_CM);
-    preferences.getString("t1Name", config.tank1Name, sizeof(config.tank1Name));
-    preferences.getString("t2Name", config.tank2Name, sizeof(config.tank2Name));
+    #ifdef ESP8266
+        return loadFromLittleFS();
+    #else
+        DEBUG_PRINTLN("Loading configuration from NVS...");
+        
+        // Tank configuration
+        config.tankMode = (TankMode)preferences.getUChar("tankMode", SINGLE_TANK);
+        config.unitSystem = (UnitSystem)preferences.getUChar("unitSystem", METRIC_CM);
+        config.tank1EmptyCm = preferences.getFloat("t1Empty", DEFAULT_TANK1_EMPTY_CM);
+        config.tank1FullCm = preferences.getFloat("t1Full", DEFAULT_TANK1_FULL_CM);
+        config.tank2EmptyCm = preferences.getFloat("t2Empty", DEFAULT_TANK2_EMPTY_CM);
+        config.tank2FullCm = preferences.getFloat("t2Full", DEFAULT_TANK2_FULL_CM);
+        preferences.getString("t1Name", config.tank1Name, sizeof(config.tank1Name));
+        preferences.getString("t2Name", config.tank2Name, sizeof(config.tank2Name));
     
     // WiFi configuration
     preferences.getString("wifiSSID", config.wifiSSID, sizeof(config.wifiSSID));
@@ -81,13 +105,17 @@ bool ConfigManager::loadConfig() {
     
     DEBUG_PRINTLN("Configuration loaded successfully");
     return true;
+    #endif
 }
 
 bool ConfigManager::saveConfig() {
-    DEBUG_PRINTLN("Saving configuration to NVS...");
-    
-    // Tank configuration
-    preferences.putUChar("tankMode", config.tankMode);
+    #ifdef ESP8266
+        return saveToLittleFS();
+    #else
+        DEBUG_PRINTLN("Saving configuration to NVS...");
+        
+        // Tank configuration
+        preferences.putUChar("tankMode", config.tankMode);
     preferences.putUChar("unitSystem", config.unitSystem);
     preferences.putFloat("t1Empty", config.tank1EmptyCm);
     preferences.putFloat("t1Full", config.tank1FullCm);
@@ -137,6 +165,7 @@ bool ConfigManager::saveConfig() {
     
     DEBUG_PRINTLN("Configuration saved successfully");
     return true;
+    #endif
 }
 
 void ConfigManager::resetToDefaults() {
@@ -191,9 +220,14 @@ void ConfigManager::resetToDefaults() {
 }
 
 void ConfigManager::generateDeviceId() {
-    uint64_t chipid = ESP.getEfuseMac();
-    snprintf(config.deviceId, sizeof(config.deviceId), "%s_%04X%08X", 
-             DEVICE_NAME, (uint16_t)(chipid >> 32), (uint32_t)chipid);
+    #ifdef ESP8266
+        uint32_t chipid = ESP.getChipId();
+        snprintf(config.deviceId, sizeof(config.deviceId), "%s_%04X", DEVICE_NAME, (uint16_t)chipid);
+    #else
+        uint64_t chipid = ESP.getEfuseMac();
+        snprintf(config.deviceId, sizeof(config.deviceId), "%s_%04X%08X", 
+                 DEVICE_NAME, (uint16_t)(chipid >> 32), (uint32_t)chipid);
+    #endif
     DEBUG_PRINTF("Generated Device ID: %s\n", config.deviceId);
 }
 

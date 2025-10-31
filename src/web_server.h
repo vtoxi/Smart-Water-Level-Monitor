@@ -3,8 +3,21 @@
 
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncTCP.h>
-#include <Update.h>
+
+// Board-specific async TCP library
+#ifdef ESP8266
+    #include <ESPAsyncTCP.h>
+#else
+    #include <AsyncTCP.h>
+#endif
+
+// Board-specific OTA update header
+#ifdef ESP8266
+    #include <Updater.h>
+#else
+    #include <Update.h>
+#endif
+
 #include <ArduinoJson.h>
 #include "config_manager.h"
 #include "sensor_ultrasonic.h"

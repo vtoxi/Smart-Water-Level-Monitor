@@ -2,13 +2,20 @@
 #define WIFI_MANAGER_H
 
 #include <Arduino.h>
-#include <WiFi.h>
+
+// Board-specific WiFi library
+#ifdef ESP8266
+    #include <ESP8266WiFi.h>
+#else
+    #include <WiFi.h>
+#endif
+
 #include <DNSServer.h>
 #include "config.h"
 #include "config_manager.h"
 
-// WiFi connection state
-enum WiFiState {
+// WiFi connection state (renamed to avoid conflict with ESP8266WiFi library)
+enum WaterMonitorWiFiState {
     WIFI_IDLE = 0,
     WIFI_CONNECTING = 1,
     WIFI_CONNECTED = 2,
@@ -41,7 +48,7 @@ public:
     void handleDNS();
     
     // Status
-    WiFiState getState() const { return state; }
+    WaterMonitorWiFiState getState() const { return state; }
     bool isConnected() const { return (state == WIFI_CONNECTED && WiFi.status() == WL_CONNECTED); }
     int8_t getRSSI() const { return WiFi.RSSI(); }
     String getIP() const { return WiFi.localIP().toString(); }
@@ -57,7 +64,7 @@ public:
     
 private:
     ConfigManager& configManager;
-    WiFiState state;
+    WaterMonitorWiFiState state;
     bool apMode;
     bool autoReconnect;
     uint32_t lastReconnectAttempt;
@@ -67,7 +74,7 @@ private:
     DNSServer* dnsServer;
     
     // Internal helpers
-    void updateState(WiFiState newState);
+    void updateState(WaterMonitorWiFiState newState);
     bool waitForConnection(uint32_t timeout);
 };
 

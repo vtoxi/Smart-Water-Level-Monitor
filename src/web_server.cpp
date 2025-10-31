@@ -347,7 +347,11 @@ void WebServer::handleWiFiScan(AsyncWebServerRequest* request) {
         JsonObject network = networks.createNestedObject();
         network["ssid"] = WiFi.SSID(i);
         network["rssi"] = WiFi.RSSI(i);
-        network["encryption"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "open" : "encrypted";
+        #ifdef ESP8266
+            network["encryption"] = (WiFi.encryptionType(i) == AUTH_OPEN) ? "open" : "encrypted";
+        #else
+            network["encryption"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "open" : "encrypted";
+        #endif
     }
     
     String output;
@@ -372,7 +376,12 @@ void WebServer::handleReset(AsyncWebServerRequest* request) {
 void WebServer::handleOTAUpload(AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
     if (!index) {
         DEBUG_PRINTF("OTA Update Start: %s\n", filename.c_str());
-        if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+        #ifdef ESP8266
+            uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+            if (!Update.begin(maxSketchSpace)) {
+        #else
+            if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+        #endif
             Update.printError(Serial);
         }
     }

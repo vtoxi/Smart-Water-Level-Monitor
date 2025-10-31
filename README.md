@@ -51,6 +51,7 @@ pio device monitor
 ### Supported Boards
 - **ESP32 DevKit** (WROOM-32 or compatible) - Dual core with BLE
 - **ESP32-S2** (Saola-1 or compatible) - Single core, WiFi only (no BLE)
+- **ESP8266** (Wemos D1 Mini Pro) - Single core, WiFi only, 80MHz
 
 ### Components
 - **JSN-SR04T** waterproof ultrasonic sensor (1-2×)
@@ -79,6 +80,15 @@ Tank 2 Sensor:   TRIG=GPIO12, ECHO=GPIO13
 OLED Display:    SDA=GPIO8,  SCL=GPIO9
 Pump Relay:      GPIO7
 Status LED:      GPIO15
+```
+
+### ESP8266 (Wemos D1 Mini Pro)
+```
+Tank 1 Sensor:   TRIG=GPIO14 (D5), ECHO=GPIO12 (D6)
+Tank 2 Sensor:   TRIG=GPIO13 (D7), ECHO=GPIO15 (D8)
+OLED Display:    SDA=GPIO4   (D2), SCL=GPIO5  (D1)
+Pump Relay:      GPIO0  (D3)
+Status LED:      GPIO2  (D4)
 ```
 
 *All pins configurable via web interface!*
@@ -132,20 +142,26 @@ default_envs = esp32dev
 
 # For ESP32-S2 (WiFi only, no BLE):
 default_envs = esp32s2dev
+
+# For ESP8266 (Wemos D1 Mini Pro):
+default_envs = d1_mini_pro
 ```
 
 ### Feature Matrix
 ```
-Feature              | ESP32 Classic | ESP32-S2
----------------------|---------------|----------
-WiFi                 |      ✅       |    ✅
-MQTT                 |      ✅       |    ✅
-BLE                  |      ✅       |    ❌
-Web Server           |      ✅       |    ✅
-OLED Display         |      ✅       |    ✅
-Pump Control         |      ✅       |    ✅
-Dual Core Tasks      |      ✅       |    ❌
-Native USB           |      ❌       |    ✅
+Feature              | ESP32 Classic | ESP32-S2  | ESP8266
+---------------------|---------------|-----------|----------
+WiFi                 |      ✅       |    ✅     |    ✅
+MQTT                 |      ✅       |    ✅     |    ✅
+BLE                  |      ✅       |    ❌     |    ❌
+Web Server           |      ✅       |    ✅     |    ✅
+OLED Display         |      ✅       |    ✅     |    ✅
+Pump Control         |      ✅       |    ✅     |    ✅
+Dual Core Tasks      |      ✅       |    ❌     |    ❌
+Native USB           |      ❌       |    ✅     |    ❌
+CPU Speed            |   240MHz      |  240MHz   |   80MHz
+RAM                  |   327KB       |  327KB    |   80KB
+Flash Usage          |   55% (1.7MB) | 28% (883KB)| 42% (437KB)
 ```
 
 ## Configuration

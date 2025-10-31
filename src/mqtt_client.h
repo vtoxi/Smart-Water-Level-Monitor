@@ -2,7 +2,14 @@
 #define MQTT_CLIENT_H
 
 #include <Arduino.h>
-#include <WiFi.h>
+
+// Board-specific WiFi library
+#ifdef ESP8266
+    #include <ESP8266WiFi.h>
+#else
+    #include <WiFi.h>
+#endif
+
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config_manager.h"

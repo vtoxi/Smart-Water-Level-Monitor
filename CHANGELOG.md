@@ -2,28 +2,39 @@
 
 All notable changes to the Water Level Monitor project will be documented in this file.
 
-## [1.1.0] - 2025-10-31
+## [1.2.0] - 2025-10-31
 
 ### Added
 - **ESP32-S2 Support**: Full compatibility with ESP32-S2 boards (WiFi-only variant)
-  - Conditional compilation for BLE (available on ESP32 Classic, not on S2)
+  - Conditional compilation for BLE (available on ESP32 Classic only)
   - Single-core task scheduling for S2 (vs dual-core for Classic)
   - Board-specific GPIO pin mappings optimized for each variant
   - Native USB support for S2 debugging
-- Multi-board PlatformIO configuration with separate environments (`esp32dev` and `esp32s2dev`)
+- **ESP8266 Support**: Full compatibility with ESP8266 boards (Wemos D1 Mini Pro)
+  - LittleFS + JSON for configuration storage (replaces NVS/Preferences)
+  - Schedule library for cooperative multitasking (replaces FreeRTOS tasks)
+  - ESP8266WiFi library compatibility layer
+  - Board-specific API differences handled (WiFi modes, OTA, chip ID)
+  - Reduced stack sizes optimized for limited RAM (80KB vs 327KB)
+  - GPIO assignments mapped to Wemos D1 Mini pins (D1-D8)
+- Multi-board PlatformIO configuration with separate environments (`esp32dev`, `esp32s2dev`, `d1_mini_pro`)
 - Feature comparison matrix in documentation
 
 ### Changed
-- Firmware version bumped to 1.1.0
+- Firmware version bumped to 1.2.0
 - Refactored BLE code with `#if HAS_BLE` preprocessor guards
 - Updated FreeRTOS task creation with board-specific core pinning
-- GPIO pins optimized for each board (avoiding strapping pins on S2)
+- GPIO pins optimized for each board (avoiding strapping pins)
+- WiFi library includes now board-specific (ESP8266WiFi vs WiFi.h)
+- ConfigManager uses LittleFS on ESP8266, NVS/Preferences on ESP32
+- Renamed `WiFiState` enum to `WaterMonitorWiFiState` to avoid ESP8266 library conflicts
 
 ### Technical Details
-- **ESP32-S2 GPIO Assignments**: I2C (GPIO8/9), Sensors (GPIO10/11/12/13), Relay (GPIO7), LED (GPIO15)
-- **ESP32 Classic GPIO Assignments**: Unchanged from v1.0.0
-- **Flash Usage**: ESP32-S2 ~28% (883KB), ESP32 Classic ~55% (1.7MB) - BLE adds ~850KB overhead
-- **RAM Usage**: ESP32-S2 ~18%, ESP32 Classic ~20%
+- **ESP32-S2 GPIO**: I2C (GPIO8/9), Sensors (GPIO10/11/12/13), Relay (GPIO7), LED (GPIO15)
+- **ESP8266 GPIO**: I2C (D2/D1), Sensors (D5/D6/D7/D8), Relay (D3), LED (D4)
+- **ESP32 Classic GPIO**: Unchanged from v1.0.0
+- **Flash Usage**: ESP8266 ~42% (437KB), ESP32-S2 ~28% (883KB), ESP32 ~55% (1.7MB)
+- **RAM Usage**: ESP8266 ~59% (48KB/80KB), ESP32-S2 ~18%, ESP32 ~20%
 
 ## [1.0.0] - 2025-10-30
 

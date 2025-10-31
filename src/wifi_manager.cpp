@@ -13,7 +13,11 @@ WiFiManager::WiFiManager(ConfigManager& configManager)
 }
 
 bool WiFiManager::begin() {
-    WiFi.mode(WIFI_MODE_NULL);
+    #ifdef ESP8266
+        WiFi.mode(WIFI_OFF);
+    #else
+        WiFi.mode(WIFI_MODE_NULL);
+    #endif
     WiFi.persistent(false); // Don't save WiFi credentials to flash
     
     // Set hostname
@@ -176,7 +180,7 @@ void WiFiManager::setHostname(const char* hostname) {
     WiFi.setHostname(hostname);
 }
 
-void WiFiManager::updateState(WiFiState newState) {
+void WiFiManager::updateState(WaterMonitorWiFiState newState) {
     if (state != newState) {
         state = newState;
         #if DEBUG_WIFI

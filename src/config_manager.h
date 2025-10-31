@@ -2,7 +2,15 @@
 #define CONFIG_MANAGER_H
 
 #include <Arduino.h>
-#include <Preferences.h>
+
+// ESP32 uses Preferences, ESP8266 will use LittleFS with JSON
+#ifndef ESP8266
+    #include <Preferences.h>
+#else
+    // ESP8266 compatibility - will store in LittleFS
+    #include <LittleFS.h>
+    #include <ArduinoJson.h>
+#endif
 
 // Tank operation mode
 enum TankMode {
@@ -116,8 +124,14 @@ public:
     void printConfig() const;
     
 private:
-    Preferences preferences;
     SystemConfig config;
+    
+    #ifndef ESP8266
+        Preferences preferences;
+    #else
+        bool loadFromLittleFS();
+        bool saveToLittleFS();
+    #endif
     
     // Internal helpers
     void generateDeviceId();

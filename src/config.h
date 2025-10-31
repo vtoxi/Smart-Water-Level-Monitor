@@ -4,19 +4,27 @@
 // ============================================================================
 // BOARD DETECTION
 // ============================================================================
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(ESP32_S2)
+#if defined(ESP8266)
+    #define BOARD_ESP8266
+    #define BOARD_NAME "ESP8266"
+    #define HAS_BLE false
+    #define IS_ESP32 false
+#elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(ESP32_S2)
     #define BOARD_ESP32_S2
     #define BOARD_NAME "ESP32-S2"
     #define HAS_BLE false
+    #define IS_ESP32 true
 #elif defined(CONFIG_IDF_TARGET_ESP32) || defined(ESP32_CLASSIC)
     #define BOARD_ESP32_CLASSIC
     #define BOARD_NAME "ESP32"
     #define HAS_BLE true
+    #define IS_ESP32 true
 #else
     // Default to ESP32 Classic
     #define BOARD_ESP32_CLASSIC
     #define BOARD_NAME "ESP32"
     #define HAS_BLE true
+    #define IS_ESP32 true
 #endif
 
 // ============================================================================
@@ -29,7 +37,33 @@
 // DEFAULT GPIO PIN ASSIGNMENTS
 // ============================================================================
 
-#ifdef BOARD_ESP32_S2
+#ifdef BOARD_ESP8266
+    // Wemos D1 Mini Pro GPIO assignments
+    // Note: D0=GPIO16, D1=GPIO5, D2=GPIO4, D3=GPIO0, D4=GPIO2, D5=GPIO14, D6=GPIO12, D7=GPIO13, D8=GPIO15
+    
+    // Tank 1 Ultrasonic Sensor (JSN-SR04T)
+    #define DEFAULT_TRIG_PIN_1      14    // D5
+    #define DEFAULT_ECHO_PIN_1      12    // D6
+    
+    // Tank 2 Ultrasonic Sensor (JSN-SR04T) - Optional for dual-tank mode
+    #define DEFAULT_TRIG_PIN_2      13    // D7
+    #define DEFAULT_ECHO_PIN_2      15    // D8
+    
+    // OLED Display (I2C)
+    #define OLED_SDA_PIN            4     // D2 (default I2C SDA)
+    #define OLED_SCL_PIN            5     // D1 (default I2C SCL)
+    #define OLED_RESET_PIN          -1
+    #define OLED_WIDTH              128
+    #define OLED_HEIGHT             64
+    #define OLED_ADDRESS            0x3C
+    
+    // Pump Control Relay
+    #define DEFAULT_PUMP_RELAY_PIN  0     // D3 (safe for relay, avoid GPIO15 at boot)
+    
+    // Status LED
+    #define STATUS_LED_PIN          2     // D4 (built-in LED)
+    
+#elif defined(BOARD_ESP32_S2)
     // ESP32-S2 specific pins (avoiding strapping pins)
     // Tank 1 Ultrasonic Sensor (JSN-SR04T)
     #define DEFAULT_TRIG_PIN_1      10
@@ -52,6 +86,7 @@
     
     // Status LED
     #define STATUS_LED_PIN          15    // Built-in LED on ESP32-S2
+    
 #else
     // ESP32 Classic pins
     // Tank 1 Ultrasonic Sensor (JSN-SR04T)
