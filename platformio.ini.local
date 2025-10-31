@@ -6,7 +6,8 @@ lib_deps_core =
     knolleary/PubSubClient@^2.8
     bblanchon/ArduinoJson@^6.21.3
     me-no-dev/ESPAsyncWebServer@^1.2.3
-    coderunner/IonConnect@^1.0.2
+
+lib_extra_dirs = ../IonConnect
 
 ; ESP32 variants
 [env:esp32dev]
@@ -15,6 +16,7 @@ board = esp32dev
 framework = arduino
 monitor_speed = 115200
 board_build.partitions = huge_app.csv
+lib_extra_dirs = ${common.lib_extra_dirs}
 lib_deps = 
     ${common.lib_deps_core}
     me-no-dev/AsyncTCP@^1.1.1
@@ -31,6 +33,7 @@ board = esp32-s2-saola-1
 framework = arduino
 monitor_speed = 115200
 board_build.partitions = huge_app.csv
+lib_extra_dirs = ${common.lib_extra_dirs}
 lib_deps = 
     ${common.lib_deps_core}
     me-no-dev/AsyncTCP@^1.1.1
@@ -47,6 +50,7 @@ platform = espressif8266
 board = d1_mini_pro
 framework = arduino
 monitor_speed = 115200
+lib_extra_dirs = ${common.lib_extra_dirs}
 lib_deps = 
     ${common.lib_deps_core}
     me-no-dev/ESPAsyncTCP@^1.2.2
@@ -58,4 +62,5 @@ build_flags =
     ; Reduce memory footprint
     -DMQTT_MAX_PACKET_SIZE=512
     -DPUBSUBCLIENT_BUFFER_SIZE=512
+
 

@@ -211,7 +211,7 @@
 // ============================================================================
 #define DEBUG_SERIAL            true
 #define DEBUG_SENSOR            true
-#define DEBUG_WIFI              true
+#define DEBUG_WIFI_CONN         true  // Renamed to avoid conflict with ESP8266WiFi.h
 #define DEBUG_MQTT              true
 #define DEBUG_BLE               true
 

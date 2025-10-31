@@ -6,25 +6,33 @@
 
 ## Quick Start
 
-### 1. Hardware Setup
+### 1. Build the Project
+
+```bash
+pio run -e esp32dev
+```
+
+The project uses the published [IonConnect library](https://registry.platformio.org/libraries/coderunner/IonConnect) from PlatformIO registry.
+
+### 2. Hardware Setup
 - Wire JSN-SR04T sensor(s) to ESP32 (see wiring diagram in docs)
 - Connect OLED display (I2C)
 - Connect pump relay module
 - **⚠️ Important:** Use voltage divider on Echo pins (5V→3.3V)
 
-### 2. Upload Firmware
+### 3. Upload Firmware
 ```bash
-pio run --target upload
+pio run --target upload -e esp32dev
 pio device monitor
 ```
 
-### 3. Configure via Web Portal
-1. Connect to WiFi: `WaterMonitor_Setup` (password: `12345678`)
-2. Open browser to `http://192.168.4.1`
+### 4. Configure via Web Portal (IonConnect)
+1. Connect to WiFi: `IonConnect-XXXX` 
+2. Browser automatically opens to `http://192.168.4.1`
 3. Configure WiFi, tank dimensions, MQTT settings
-4. Save and reboot
+4. Save and device connects automatically
 
-### 4. Monitor Water Levels
+### 5. Monitor Water Levels
 - **OLED Display:** Real-time tank levels and status
 - **Web Dashboard:** `http://[device-ip]/`
 - **MQTT:** Subscribe to `water/level`
@@ -34,15 +42,36 @@ pio device monitor
 
 ## Features
 
+### Water Monitoring
 ✅ Single or dual tank monitoring  
-✅ Configurable via web interface (no hardcoding!)  
-✅ MQTT publishing with JSON payloads  
-✅ BLE GATT service  
-✅ OLED display  
-✅ Automatic pump control with safety features  
-✅ OTA firmware updates  
-✅ Captive portal for easy setup  
-✅ Persistent configuration in NVS flash  
+✅ JSN-SR04T waterproof ultrasonic sensors  
+✅ Real-time measurements with median filtering  
+✅ Configurable tank depth, units, and thresholds  
+✅ OLED display with visual progress bars  
+
+### Connectivity (Powered by IonConnect)
+✨ **Modern captive portal** with beautiful responsive UI  
+✨ **Live dashboard** with real-time status updates (SSE)  
+✨ **BLE provisioning** for ESP32 (configure via Bluetooth)  
+✨ **REST API** for programmatic access  
+✨ **Multi-network support** with priority management  
+✨ **mDNS discovery** (access via devicename.local)  
+✨ **Security features** (password protection, API tokens)  
+
+### Data & Control
+✅ **MQTT publishing** with JSON payloads and QoS  
+✅ **Automatic pump control** with safety features:  
+  - Dry-run protection (sensor error detection)  
+  - Maximum runtime limits (prevents overflow)  
+  - Cooldown periods (prevents motor damage)  
+  - Auto/manual modes  
+
+### Management
+✅ **OTA firmware updates** (via web interface)  
+✅ **Configuration backup/restore** (JSON export/import)  
+✅ **Diagnostics dashboard** (memory, WiFi stats, errors)  
+✅ **Persistent storage** (NVS on ESP32, LittleFS on ESP8266)  
+✅ **Web configuration** (no hardcoding required!)  
 
 ---
 
@@ -97,16 +126,25 @@ Status LED:      GPIO2  (D4)
 
 ## Documentation
 
-📖 **Full documentation:** [docs/README.md](docs/README.md)
+### Core Documentation
+📖 **[docs/README.md](docs/README.md)** - Complete project documentation  
+🧪 **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Comprehensive testing procedures (11 scenarios)  
+📘 **[ION_CONNECT_INTEGRATION.md](ION_CONNECT_INTEGRATION.md)** - IonConnect integration details  
+📋 **[COMPLETE_SUMMARY.md](COMPLETE_SUMMARY.md)** - Project overview and status  
 
-Includes:
-- Detailed wiring diagrams
-- Complete configuration guide
-- API documentation
-- MQTT integration examples
-- BLE characteristic reference
-- Troubleshooting guide
-- Home Assistant integration
+### Setup & Deployment
+🚀 **[EXECUTE_WORKFLOW.md](EXECUTE_WORKFLOW.md)** - Complete build and deployment guide  
+📦 **[PUBLISHING_STEPS.md](PUBLISHING_STEPS.md)** - Library publishing instructions  
+
+### Included Guides
+- Detailed wiring diagrams for all supported boards
+- Complete configuration guide via web interface
+- API documentation (REST & MQTT)
+- MQTT integration examples with QoS
+- BLE characteristic reference (ESP32)
+- Troubleshooting guide with solutions
+- Home Assistant integration examples
+- OTA update procedures
 
 ---
 
@@ -117,13 +155,13 @@ water-level/
 ├── src/
 │   ├── main.cpp              # Main application
 │   ├── config.h              # Configuration constants
-│   ├── config_manager.*      # NVS configuration storage
-│   ├── sensor_ultrasonic.*   # Sensor driver with filtering
+│   ├── config_manager.*      # NVS/LittleFS configuration storage
+│   ├── sensor_ultrasonic.*   # Sensor driver with median filtering
 │   ├── display_oled.*        # OLED display driver
-│   ├── wifi_manager.*        # WiFi + captive portal
+│   ├── wifi_ionconnect.*     # IonConnect WiFi wrapper (NEW)
 │   ├── web_server.*          # Web configuration interface
-│   ├── mqtt_client.*         # MQTT client with reconnect
-│   ├── ble_service.*         # BLE GATT service
+│   ├── mqtt_client.*         # MQTT client with auto-reconnect
+│   ├── ble_service.*         # BLE GATT service (ESP32 only)
 │   └── pump_controller.*     # Pump control logic
 ├── docs/
 │   └── README.md             # Complete documentation
@@ -286,6 +324,54 @@ Future enhancements:
 - [ ] Battery monitoring
 - [ ] Solar panel integration
 - [ ] Historical data graphs
+
+---
+
+## 🌐 IonConnect WiFi Library
+
+This project uses **[IonConnect](https://registry.platformio.org/libraries/coderunner/IonConnect)** - a next-generation WiFi provisioning library for ESP32/ESP8266.
+
+### Why IonConnect?
+
+**Modern User Experience:**
+- 🎨 Beautiful responsive web interface (Tailwind CSS)
+- 📱 Mobile-first design, perfect on all devices
+- 🔄 Live status updates via Server-Sent Events
+- ⚡ Fast, async, non-blocking operation
+
+**Advanced Features:**
+- 📡 **BLE Provisioning** - Configure via Bluetooth (ESP32)
+- 🌐 **REST API** - Programmatic configuration access
+- 💾 **Config Backup/Restore** - JSON export/import
+- 🔍 **mDNS Support** - Access via `devicename.local`
+- 📊 **Diagnostics Dashboard** - System health monitoring
+- 🔐 **Security** - Password protection and API tokens
+- 📡 **Multi-Network** - Store and prioritize multiple WiFi networks
+
+**Developer Friendly:**
+- 🔌 Plugin architecture for extensibility
+- 📚 Comprehensive documentation
+- 🎯 9 working examples included
+- 🐛 Active maintenance and updates
+- 🤝 Community-driven improvements
+
+### Installation
+
+**PlatformIO (Already included):**
+```ini
+lib_deps = coderunner/IonConnect@^1.0.2
+```
+
+**Arduino IDE:**
+```bash
+# Library Manager: Search "IonConnect"
+```
+
+### Resources
+
+- **Library:** https://registry.platformio.org/libraries/coderunner/IonConnect
+- **Documentation:** See `/IonConnect/README.md` in workspace  
+- **Integration Guide:** See `/IonConnect/INTEGRATION.md`
 
 ---
 

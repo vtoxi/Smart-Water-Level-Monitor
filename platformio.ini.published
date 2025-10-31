@@ -1,3 +1,4 @@
+; Water Level Monitor - Using Published IonConnect Library
 ; Common libraries (board-specific variants will be selected automatically)
 [common]
 lib_deps_core = 
@@ -6,7 +7,7 @@ lib_deps_core =
     knolleary/PubSubClient@^2.8
     bblanchon/ArduinoJson@^6.21.3
     me-no-dev/ESPAsyncWebServer@^1.2.3
-    coderunner/IonConnect@^1.0.2
+    vtoxi/IonConnect@^1.0.2
 
 ; ESP32 variants
 [env:esp32dev]
@@ -58,4 +59,5 @@ build_flags =
     ; Reduce memory footprint
     -DMQTT_MAX_PACKET_SIZE=512
     -DPUBSUBCLIENT_BUFFER_SIZE=512
+
 

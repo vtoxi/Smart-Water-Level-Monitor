@@ -23,7 +23,7 @@
 #include "config_manager.h"
 #include "sensor_ultrasonic.h"
 #include "display_oled.h"
-#include "wifi_manager.h"
+#include "wifi_ionconnect.h"
 #include "web_server.h"
 #include "mqtt_client.h"
 #include "ble_service.h"
@@ -33,7 +33,7 @@
 // GLOBAL INSTANCES
 // ============================================================================
 ConfigManager configManager;
-WiFiManager wifiManager(configManager);
+WiFiIonConnect wifiManager(configManager);  // Using IonConnect library
 WebServer webServer(configManager);
 MQTTClient mqttClient(configManager);
 WaterLevelBLE bleService(configManager);
@@ -135,21 +135,18 @@ void setup() {
     DEBUG_PRINTLN("Initializing pump controller...");
     pumpController.begin();
     
-    // Initialize WiFi
-    DEBUG_PRINTLN("Initializing WiFi...");
-    wifiManager.begin();
+    // Initialize WiFi with IonConnect
+    DEBUG_PRINTLN("Initializing WiFi with IonConnect...");
+    if (!wifiManager.begin()) {
+        DEBUG_PRINTLN("WiFi initialization failed!");
+    }
+    DEBUG_PRINTLN("IonConnect will handle connection and captive portal automatically");
     
+    // Show initial status on display
     if (configManager.isWiFiConfigured()) {
-        DEBUG_PRINTLN("Connecting to WiFi...");
         display.showConfigMode("Connecting...", "Please wait");
-        
-        if (!wifiManager.connect()) {
-            DEBUG_PRINTLN("WiFi connection failed, starting AP mode...");
-            wifiManager.startAP();
-        }
     } else {
-        DEBUG_PRINTLN("No WiFi configuration, starting AP mode...");
-        wifiManager.startAP();
+        display.showConfigMode("Setup Mode", "Connect to WiFi AP");
     }
     
     // Show config portal info if in AP mode
@@ -267,6 +264,9 @@ void setup() {
 // MAIN LOOP
 // ============================================================================
 void loop() {
+    // Handle IonConnect loop (required for captive portal and WiFi management)
+    wifiManager.loop();
+    
     // Handle OTA updates
     ArduinoOTA.handle();
     
@@ -381,16 +381,8 @@ void networkTask(void* parameter) {
     uint32_t lastMQTTCheck = 0;
     
     while (1) {
-        // Handle DNS for captive portal
-        if (wifiManager.isAPMode()) {
-            wifiManager.handleDNS();
-        }
-        
-        // Check WiFi connection (every 5 seconds)
-        if (millis() - lastWiFiCheck >= 5000) {
-            wifiManager.checkConnection();
-            lastWiFiCheck = millis();
-        }
+        // IonConnect handles WiFi and DNS automatically in main loop
+        // No need for manual connection checking or DNS handling here
         
         // MQTT handling
         if (wifiManager.isConnected()) {
